@@ -28,7 +28,7 @@ namespace TimeLogService
                             PropertyInfo propertyInfo = obj.GetType().GetProperty(prop.Name);
                             var propertyCustomAttributes = propertyInfo.GetCustomAttributes().ToList()[0];
                             propertyInfo.SetValue(obj,
-                                Convert.ChangeType(row[((ColumnAttribute) (propertyCustomAttributes)).Name],
+                                Convert.ChangeType(row[((ColumnAttribute)(propertyCustomAttributes)).Name],
                                     propertyInfo.PropertyType), null);
                         }
                         catch
@@ -110,6 +110,7 @@ namespace TimeLogService
 
         private static void WriteLogs(string line)
         {
+            int m = 0;
             if (!string.IsNullOrEmpty(line))
             {
                 Console.WriteLine();
@@ -118,6 +119,7 @@ namespace TimeLogService
 
                 int intMonthLatest = 0;
                 string[] folders = Directory.GetDirectories(AppPath);
+                bool isCurrentMonthFound = false;
 
                 foreach (string folder in folders)
                 {
@@ -126,16 +128,22 @@ namespace TimeLogService
 
                     if (DateTime.TryParse(string.Format("{0} 01, 2016", di.Name.Split(' ')[1]), out dateResult))
                     {
-                        int m = Convert.ToDateTime(string.Format("{0} 01, 2016", di.Name.Split(' ')[1])).Month;
+                        m = Convert.ToDateTime(string.Format("{0} 01, 2016", di.Name.Split(' ')[1])).Month;
                         if (m == DateTime.Now.Month)
                         {
                             intMonthLatest = m;
+                            isCurrentMonthFound = true;
                             break;
                         }
                     }
                 }
 
-                string monthName = new DateTime(2010, intMonthLatest, 1).ToString("MMMM", CultureInfo.CurrentCulture); 
+                if (!isCurrentMonthFound)
+                {
+                    intMonthLatest = m;
+                }
+
+                string monthName = new DateTime(2010, intMonthLatest, 1).ToString("MMMM", CultureInfo.CurrentCulture);
                 string path = string.Format("{0}\\{1} {2}", AppPath, intMonthLatest.ToString("0#"), monthName);
                 List<string> fileNames = new List<string>();
                 string[] files = Directory.GetFiles(path);
